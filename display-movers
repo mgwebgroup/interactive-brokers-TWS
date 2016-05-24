@@ -1,0 +1,17 @@
+#! /bin/sh -
+
+#usage: display-movers <snapshot_file> <Market_survey>
+#the script matches symbols from the snapshot to the Market_Survey watchlist
+#snapshots are saved from the stock scans from IB TWS. Market Survey watchlist is saved as a .csv file from a spreadsheet
+echo "File: $1"
+#sort the scan by symbol
+sort -u -t, -k1 -o scan.src "$1"
+# nix header line and the last line from the Market Survey.csv and sort the market survey by symbol
+tail -n +2 "$2" | head -n -1 | sort -t, -k1 -d -o survey.sort 
+#print header string
+awk -F, 'FNR == 1 { printf "%-6s:%-20s:%-30s:%-9s:%6.6s:%s:%-6s:%-7s:%-10s\n",$1,$2,$4,$5,"Price",$6,"Total9","Total21","SITB Score" }' "$2"
+#get records from the market survey which have either big avg assiciated with them or are in AS list, or were movers and sort the result file by sector.
+#awk -F, '$16 != "" || $12 != "" || $13 != ""' survey.sort | join -t, --nocheck-order scan.src - | awk -F, '{ printf "%-6s %-20s %-30s %-9s %s %s %-4s %-4s %-4s %-4s %s %5.5s %-6s %-5s %-6s %-6s\n",$1,$8,$10,$12,$2,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23 }' - > result
+awk -F, '$1 != "" || $6 != ""' survey.sort | join -t, --nocheck-order scan.src - | 
+awk -F, '{ printf "%-6.6s:%-20.20s:%-30.30s:%-9.9s:%6.2f:%-6.6s:%-6.6s:%-7.7s:%10.10s\n",$1,$8,$10,$11,$2,$12,$34,$35,$36 }' - | sort --field-separator=: -d -k4
+rm scan.src survey.sort

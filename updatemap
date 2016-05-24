@@ -1,0 +1,22 @@
+#! /bin/sh -
+
+###############################################################################
+# usage: shell> ./updatemap <Market\ Survey_YYMM.csv> 
+# 
+# Copyright (C) 2015 MGWEBGROUP
+# 
+# This script updates the Market Map in TWS, which is a "grand watchlist" of 
+# hot stocks in 12 sectors by using "codes" from a specified column of a .csv
+# spreadsheet <Market\ Survey_YYMM.csv>. TWS Market Map must initially be saved
+# as map.old csv file. This script will create the map.new file, whill be 
+# ready for importing into TWS.
+# 
+# input: <Market\ Survey_YYMM.csv>, <map.old>
+# output: <map.new>
+#
+# Detailed explanation of the codes can be found in the script updatemap.awk
+###############################################################################
+
+cp map.old map.old.bak
+tail -n +2 "$1" | awk -F, '$6 != ""' | sort -t, -k1 | sort -t, -k5 | awk -F, -v ORS="" -f updatemap.awk col=6
+rm cache.tmp

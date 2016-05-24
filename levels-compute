@@ -1,0 +1,105 @@
+#! /usr/bin/php -f 
+<?php
+/**
+* 
+* @brief The scripts reads .dat files with stock price information and outputs .csv file with levels and their frequencies according to the levels calc discovered in 2014.
+* 
+* @version 150701
+* @author Alex Kay (MGWebGroup)
+* @usage 
+* PHP code below before September 2015 was stored in dedicated file levels.php, therefore its invocation from command line used to be: php -f levels.php symbol=TST
+* This will look for file named TST.dat in the script's root dir (wherever teh levels.php was), read price information from there and will save file TST.csv with calculated levels.
+* With this script now saved in ~/bin as levels-compute, you can go to the Levels directory, where the .dat files are stored, then simply type: levels-compute symbol=TST
+* Example of the .dat file:
+* 50,10,0.20, where 50 is the upper level of the level mask, 10 is the lower level of the level mask, 0.20 step (always positive)
+* 150514,69.35, following lines consist of a date and price.
+* 150515,64.01
+* 150516,79.62
+*/
+
+$path = array( 
+	'/home/alex/Documents/110318 MGWebGroup/02. Projects/121021_traders_toolkit/03_active_version/library/calc1.class.php',
+	'/home/alex/Documents/110318 MGWebGroup/02. Projects/121021_traders_toolkit/03_active_version/library/customexception.class.php',
+
+ );
+foreach ( $path as $library ) {
+	include realpath( $library );
+}
+
+
+parse_str( implode( '&', array_slice( $argv, 1 ) ), $_GET );
+
+
+$const['base']['pos'] = 7.5E-03;
+$const['base']['neg'] = -7.5E-03;
+$const['order']['pos'] = $const['order']['neg'] = array(2,2,2,2,2);
+$const['order']['n'] = count( $const['order']['pos'] );
+// var_dump( $const['order']['pos'], $const['order']['neg'] ); exit();
+for ( $i = -2, $j = 0; $i <= 2; $i++, $j++ ) {
+	$const['factor']['pos'][$j] = $const['base']['pos'] * pow( $const['order']['pos'][$j], $i );
+	$const['factor']['neg'][$j] = $const['base']['neg'] * pow( $const['order']['neg'][$j], $i );
+}
+
+try {
+	if ( !$fh = fopen( $_GET['symbol'] . '.dat', 'r' ) ) throw new Exception();
+} catch ( Exception $e ) {
+	echo 'Could not open file ' . $_GET['symbol'] . ".dat\n";
+	exit();
+}
+$i = 0;
+while ( $data = fgetcsv( $fh, 20, ',' ) ) {
+	if ( $i ) { 
+		// printf( "data[1]=%.2f, i=%u ", $data[1], $i );
+		$row[$i-1] = Calc::myCeil( $data[1], $mask['step'] );
+		$col[$i-1] = $data[1];
+		// $row[$i-1] = Calc::myCeil( $data[1], $mask['step'] );
+		// $col[$i-1] = 1;
+		// printf( "row[%u]=%.2f\tcol[%u]=%.2f\n", $i-1, $row[$i-1], $i-1, $col[$i-1] );
+		foreach ( $const['factor']['pos'] as $j => $factor ) {
+			$row[$i+$j] = Calc::myCeil( pow( $data[1], $factor + log( $data[1], $data[1] ) ), $mask['step'] );
+			$col[$i+$j] = pow( $data[1], $factor + log( $data[1], $data[1] ) );
+			// $row[$i+$j] = Calc::myCeil( $col[$i+$j], $mask['step'] );
+			// $col[$i+$j] = 1;
+			// printf( "  pos factor %.2e j=%u row[%u]=%.2f\n", $factor, $j, $i+$j, $row[$i + $j] );
+			// printf( "row[%u]=%.2f\tcol[%u]=%.2f\n", $i+$j, $row[$i+$j], $i+$j, $col[$i+$j] );
+		}
+		foreach ( $const['factor']['neg'] as $j => $factor ) {
+			$row[$i+$const['order']['n']+$j] = Calc::myCeil( pow( $data[1], $factor + log( $data[1], $data[1] ) ), $mask['step'] );
+			$col[$i+$const['order']['n']+$j] = pow( $data[1], $factor + log( $data[1], $data[1] ) );
+			// $row[$i+$const['order']['n']+$j] = Calc::myCeil( $col[$i+$const['order']['n']+$j], $mask['step'] );
+			// $col[$i+$const['order']['n']+$j] = 1;
+			// printf( "  neg factor %.2e j=%u row[%u]=%.2f\n", $factor, $j, $i + $const['order']['n'] + $j, $row[$i + $const['order']['n'] + $j] );
+			// printf( "row[%u]=%.2f\tcol[%u]=%.2f\n", $i+$const['order']['n']+$j, $row[$i+$const['order']['n']+$j], $i+$const['order']['n']+$j, $col[$i+$const['order']['n']+$j] );
+		}
+		$i += $const['order']['n'] * 2 + 1;
+	} else {
+		$mask['start'] = $data[0];
+		$mask['end'] = $data[1];
+		$mask['step'] = $data[2];
+		$i++;
+	}
+}
+fclose( $fh );
+
+
+$pivot = Calc::create_Pivot( array( 'name' => $_GET['symbol'], 'rows_population' => &$row, 'columns_population' => &$col, 'dump_csv' => 'pivot.csv', 'rows_sort' => 'desc', ) );
+$name = strtolower( $_GET['symbol'] );
+
+$heading = implode( ',', array( $_GET['symbol'], 'Freq', 'Avg', ) ) . "\n";
+$fh = fopen( $_GET['symbol'] . '.csv', 'w' );
+fwrite( $fh, $heading );
+
+$avg = array();
+
+foreach ( Calc::$pivot_table[$name] as $group => $line ) {
+	$sum = 0;
+	foreach ( $line as $col => $value ) {
+		if ( $value ) $sum += $col * $value;
+
+	}
+	$avg[$group] = ( Calc::$pivot_table[$name][$group]['total'] )? round( $sum / Calc::$pivot_table[$name][$group]['total'], 2 ) : 0;
+	fwrite( $fh, implode( ',', array( $group, Calc::$pivot_table[$name][$group]['total'], $avg[$group], ) ) . "\n" );
+
+}
+
+fclose( $fh );

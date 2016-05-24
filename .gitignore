@@ -1,0 +1,6 @@
+*.sublime-project
+*.sublime-workspace
+map.*
+Market[ _]Survey_*.csv
+*.tmp
+latest_commit_message.txt

@@ -1,0 +1,42 @@
+#! /bin/sh -
+###############################################################################
+# usage: shell>./scoremap <Market\ Survey_YYMM.csv> 
+# 
+# Copyright (C) 2016 MGWEBGROUP
+# 
+# This script reads the map.new file exported from TWS "grand watchlist" and
+# applies scores to symbols found in each category. For example, symbols in the
+# "MOVER" category will be assigned a score of 50, "WEAKNESS" -10, etc. 
+# 
+# input: <Market\ Survey_YYMM.csv>, <map.new>
+# output: <Market\ Survey_YYMMDD.csv>
+#
+# The scores are then stored as the latest column in the Market Survey file,
+# which is saved with today's timestamp. It is assumed that the user will then
+# copy the newly created column from the Market Survey file with the timestamp
+# into the original Market Survey file. Both files need to be sorted using
+# same spreadsheet program before pasting columns.
+#
+# Detailed explanation of the scores can be found in the script scoremap.awk
+###############################################################################
+dateStamp=$(date "+%y%m%d")
+fileName="Market_Survey_$dateStamp.csv"
+
+awk -F, -v ORS="" -f scoremap.awk -- "$1" | sort -t, -k1 > scores.tmp
+sort -t, -k1 scores.tmp > cache.tmp; cp cache.tmp scores.tmp
+result=$(cut -d, -f1 scores.tmp | uniq -d | join -t, -j1 --nocheck-order scores.tmp -) 
+if [ -n "$result" ] 
+then 
+	echo "Map contains the following duplicate symbols:\n$result"
+	echo "Duplicate symbols need to be resolved before this script can be run again. Check your symbols map in IB. Exiting now."
+	exit
+fi
+
+tail -n +2 "$1" | head -n -1 | sort -t, -d -k1 > cache.tmp
+head -n1 "$1" > $fileName
+join -i -t, -j1 --nocheck-order -a1 cache.tmp scores.tmp | 
+awk -F, -v OFS="," '{ print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$31,$28,$29,$30 }' >> $fileName
+tail -n1 "$1" >> $fileName
+
+rm cache.tmp scores.tmp
+echo "Output fileName = $fileName"
