@@ -21,7 +21,7 @@ A table of stocks will be listed.
 
 
 Compute "magic levels" for price.
-- A data file that contains timestamp and price information must be present and saved as a .dat file. See file "SPY.dat" as an example. This file usually contains a list of extreme price points listed in ascending chronological order (latest dates at bottom of list) as <timestamp>,<price><RET>
+- A data file that contains timestamp and price information must be present and saved as a .dat file. See file "SPY.dat" as an example. This file usually contains a list of extreme price points listed in ascending chronological order (latest dates at bottom of list) as TIMESTAMP,PRICE,NEW_LINE_CHAR
 
 Scans> ./levels-compute symbol=SPY
 A file SPY.csv will be created, which will contain the "magic levels"
@@ -42,5 +42,5 @@ As you go over each stock in the TWS map, it will be moved around between the ca
 - Market Survey file must be present. We will use "Market_Survey_1606.csv" as an example.
 - New map file must be present. We will use "map.new" as an example.
 
-Scans> ./scoremap <Market\ Survey_YYMM.csv>
+Scans> ./scoremap Market_Survey_1606.csv
 A .csv file "Market_Survey_YYMMDD.csv" with scores assigned for each stock will be created and will be ready for import into your general Market_Survey_YYMM.ods file.
