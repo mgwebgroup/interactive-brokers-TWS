@@ -1,5 +1,5 @@
 ### DESCRIPTION
-This set of srcipts was written for Trader Workstation (TWS) which is provided by Interactive Brokers (IB) for the Unix platform. The scripts were designed to enhance the existing functionality of TWS by:
+This set of srcipts was written for Trader Workstation (TWS) which is provided by Interactive Brokers (IB) for the Unix platform. The scripts were designed to enhance the existing functionality of TWS by:  
 * Match custom scanned stocks from TWS against user Universe.
 * Compute "magic levels" for price.
 * Update the stock map.
@@ -15,7 +15,7 @@ Match custom scanned stocks from TWS against user Universe.
 
 `Scans> ./display-movers down_1000.csv Market_Survey_1606.csv`
 
-A table of stocks will be listed.
+*A table of stocks will be listed.*
 
 
 Compute "magic levels" for price.
@@ -23,7 +23,7 @@ Compute "magic levels" for price.
 
 `Scans> ./levels-compute symbol=SPY`
 
-A file SPY.csv will be created, which will contain the "magic levels"
+*A file SPY.csv will be created, which will contain the "magic levels"*
 
 
 Update the stock map.
@@ -33,7 +33,7 @@ Update the stock map.
 
 `Scans> ./updatemap Market_Survey_1606.csv`
 
-A file name map.new will be created ready for import into TWS. Just clear the existing map in TWS, then right-click and select "Import/Export"/"Import Contracts"
+*A file name map.new will be created ready for import into TWS. Just clear the existing map in TWS, then right-click and select "Import/Export"/"Import Contracts"*
 
 
 Score the stock map.
@@ -44,4 +44,4 @@ As you go over each stock in the TWS map, it will be moved around between the ca
 
 `Scans> ./scoremap Market_Survey_1606.csv`
 
-A .csv file "Market_Survey_YYMMDD.csv" with scores assigned for each stock will be created and will be ready for import into your general Market_Survey_YYMM.ods file.
+*A .csv file "Market_Survey_YYMMDD.csv" with scores assigned for each stock will be created and will be ready for import into your general Market_Survey_YYMM.ods file.*
