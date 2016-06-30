@@ -14,6 +14,7 @@ Match custom scanned stocks from TWS against user Universe.
 - Results of the custom scan must already be saved as a .csv file. This can be done through right-clicking on the scan results in TWS and saving them as .csv file. We will use "down_1000.csv" as an example.
 
 `Scans> ./display-movers down_1000.csv Market_Survey_1606.csv`
+
 A table of stocks will be listed.
 
 
@@ -21,6 +22,7 @@ Compute "magic levels" for price.
 - A data file that contains timestamp and price information must be present and saved as a .dat file. See file "SPY.dat" as an example. This file usually contains a list of extreme price points listed in ascending chronological order (latest dates at bottom of list) as TIMESTAMP,PRICE,NEW_LINE_CHAR
 
 `Scans> ./levels-compute symbol=SPY`
+
 A file SPY.csv will be created, which will contain the "magic levels"
 
 
@@ -30,6 +32,7 @@ Update the stock map.
 - "updatemap.awk" script must be present in same directory as the "updatemap" script.
 
 `Scans> ./updatemap Market_Survey_1606.csv`
+
 A file name map.new will be created ready for import into TWS. Just clear the existing map in TWS, then right-click and select "Import/Export"/"Import Contracts"
 
 
@@ -40,4 +43,5 @@ As you go over each stock in the TWS map, it will be moved around between the ca
 - New map file must be present. We will use "map.new" as an example.
 
 `Scans> ./scoremap Market_Survey_1606.csv`
+
 A .csv file "Market_Survey_YYMMDD.csv" with scores assigned for each stock will be created and will be ready for import into your general Market_Survey_YYMM.ods file.
